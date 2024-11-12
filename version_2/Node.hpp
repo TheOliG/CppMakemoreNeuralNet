@@ -6,7 +6,7 @@
 #include <cassert>
 #include <cmath>
 #include "CompGraph.hpp"
-#include "gpuMatMul.cuh"
+#include "gpuOperationInterface.cuh"
 
 using namespace std;
 class Node{

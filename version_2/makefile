@@ -1,5 +1,5 @@
-main: main.o CompGraph.o Node.o encoding.o gpuMatMul.o
-	g++ main.o CompGraph.o Node.o encoding.o gpuMatMul.o -o main -L/usr/local/cuda/lib64 -lcudart
+main: main.o CompGraph.o Node.o encoding.o gpuOperationInterface.o
+	g++ main.o CompGraph.o Node.o encoding.o gpuOperationInterface.o -o main -L/usr/local/cuda/lib64 -lcudart -lcublas -lcuda
 
 main.o: main.cpp
 	g++ -c main.cpp -o main.o
@@ -13,5 +13,5 @@ Node.o: Node.cpp
 encoding.o: encoding.cpp
 	g++ -c encoding.cpp -o encoding.o
 
-gpuMatMul.o: gpuMatMul.cu
-	nvcc -c gpuMatMul.cu -o gpuMatMul.o -std=c++14
+gpuOperationInterface.o: gpuOperationInterface.cu
+	nvcc -c gpuOperationInterface.cu -o gpuOperationInterface.o -std=c++14

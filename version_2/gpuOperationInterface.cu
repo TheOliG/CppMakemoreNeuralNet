@@ -63,7 +63,6 @@ void cublasGpuDotProduct(double* matrixA, int matrixAHeight, int matrixAWidth, d
         //cout<<endl;
     }
 
-    cout<<"running cublas mat mul"<<endl;
 
     // Storing values needed to perform dot product
     double alpha = 1.0;
@@ -108,6 +107,7 @@ void cublasGpuDotProduct(double* matrixA, int matrixAHeight, int matrixAWidth, d
 //nvcc -o gpuOperationInterface gpuOperationInterface.cu -lcudnn -lcuda
 
 
+/*
 //Main for testing
 int main (void){
 
@@ -149,3 +149,4 @@ int main (void){
     free(matrixB);
     free(matrixC);   
 }
+*/

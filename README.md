@@ -41,7 +41,7 @@ This project is only intended for educational purposes and was done to help unde
    - `Node.cpp`: The implementation of a "node" which is used to store gradients and data.
    - `CompGraph.cpp`: The implementation of the computational graph.
    - `encoding.cpp`: Does the character encoding.
-   - `gpuMatMul.cu`: The CUDA implemetation of a matrix multiplication
+   - `gpuOperationInterface.cu`: The CuBLAS matrix multiplication interface
    - `makefile`: The makefile used to compile the project.
    - `names.txt`: Sample training data containing a large sample of names.
    - `README.md`: Project documentation.

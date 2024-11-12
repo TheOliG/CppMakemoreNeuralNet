@@ -10,7 +10,7 @@ int main(void){
     //HYPER PARAMETERS 
     int CONTEXT_WINDOW = 4;
     int LOOKUP_DIMENSIONS = 32;
-    int HIDDEN_LAYER_SIZE = 256;
+    int HIDDEN_LAYER_SIZE = 2048;
     int NUM_EXAMPLES = 64;
     int NUM_ITER = 20000;
     double LEARNING_RATE = 0.01;

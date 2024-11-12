@@ -178,11 +178,12 @@ Node* Node::dotProduct(Node* otherNode, CompGraph* compGraph, bool transposeFirs
 
 
     //Perform matrix multiplication on the GPU
-    gpuMatMul(
+    cublasGpuDotProduct(
         this->matrixValues, this->height, this->width, 
         otherNode->matrixValues, otherNode->height, otherNode->width, 
         newNode->matrixValues, transposeFirst, tranposeSecond
     );
+
 
     //We can rename some variables to make it easier to understand
     Node* firstMatrix = this;
@@ -195,14 +196,14 @@ Node* Node::dotProduct(Node* otherNode, CompGraph* compGraph, bool transposeFirs
             https://youtu.be/dB-u77Y5a6A?si=e_HMJr3RWuZrmuUb&t=3612 
         */
         //Calculating first matrix gradients
-        gpuMatMul(
+        cublasGpuDotProduct(
             resultingMatrix->matrixGradients, resultingMatrix->height, resultingMatrix->width,
             secondMatrix->matrixValues, secondMatrix->height, secondMatrix->width,
             firstMatrix->matrixGradients, false, true
         );
 
         //Calculating the second matrix gradients
-        gpuMatMul(
+        cublasGpuDotProduct(
             firstMatrix->matrixValues, firstMatrix->height, firstMatrix->width,
             resultingMatrix->matrixGradients, resultingMatrix->height, resultingMatrix->width,
             secondMatrix->matrixGradients, true, false
