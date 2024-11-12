@@ -3,7 +3,7 @@
 #include "CompGraph.hpp"
 #include "encoding.hpp"
 
-vector<double> softMax(double* inputVector, int width);
+vector<double> softMax(double* inputVector, int width, double temp = 0.);
 
 
 int main(void){
@@ -106,8 +106,8 @@ int main(void){
         //Update the parameters given the gradients they have
         for(Node* param : params){
             for(int i = 0; i<param->width * param->height; i++){
-                if(currentIter/NUM_ITER > 0.5){
-                    param->matrixValues[i] += -LEARNING_RATE * param->matrixGradients[i] * 0.1;
+                if((double)currentIter/(double)NUM_ITER > 0.5){
+                    param->matrixValues[i] += -LEARNING_RATE * param->matrixGradients[i] * 0.5;
                 }
                 else{
                     param->matrixValues[i] += -LEARNING_RATE * param->matrixGradients[i];
@@ -166,8 +166,16 @@ int main(void){
         }
 
         if(curIter%1000 == 0){
+            cout<<endl;
             string temp;
             cin>>temp;
+            currentContext = zeroedContext;
+            for(int i = 0; i<CONTEXT_WINDOW; i++){
+                if(currentContext.size()-1-i < 0 || temp.length()-1-i < 0){
+                    break;
+                }
+                currentContext.at(currentContext.size()-1-i) = encodeChar(temp.at(temp.length()-1-i), validChar);
+            }
         }
 
     }
@@ -176,7 +184,7 @@ int main(void){
 
 
 
-vector<double> softMax(double* inputVector, int width){
+vector<double> softMax(double* inputVector, int width, double temp){
 
     double max = -INTMAX_MAX;
     for(int i = 0; i<width; i++){

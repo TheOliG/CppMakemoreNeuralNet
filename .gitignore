@@ -1,0 +1,60 @@
+#Taken from chatgpt because I cant be bothered
+
+# Ignore object files, libraries, and executables
+*.o
+*.a
+*.so
+*.exe
+*.out
+*.dll
+
+# Ignore CMake build files
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+build/
+debug/
+release/
+
+# Ignore generated files
+*.dSYM/
+*.log
+
+# Ignore binaries and libraries in the root directory
+/binaries/
+/libs/
+
+# Ignore any temporary files
+*~
+*.swp
+*.tmp
+
+# Ignore Visual Studio Code and Visual Studio files
+.vscode/
+.vs/
+*.code-workspace
+
+# Ignore Qt Creator files
+*.pro.user
+*.pro.user.*
+*.qbs.user
+*.qbs.user.*
+*.creator.user
+
+# Ignore Xcode files
+*.xcworkspace/
+*.xcodeproj/
+
+# Ignore compiled Python files (if any Python scripts are used in the project)
+__pycache__/
+*.pyc
+
+# Ignore CUDA cache files
+*.ptx
+nvcc_build/
+.cache/
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db

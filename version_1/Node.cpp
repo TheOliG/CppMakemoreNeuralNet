@@ -244,7 +244,7 @@ Node* Node::tanh(CompGraph* compGraph){
 
 
 Node* Node::batchNorm(CompGraph* compGraph){
-    
+    return nullptr;
 }
 
 

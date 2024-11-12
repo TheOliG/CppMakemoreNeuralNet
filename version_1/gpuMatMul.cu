@@ -137,6 +137,7 @@ void gpuMatMul(double *matrixA, int matrixAHeight, int matrixAWidth, double *mat
     //cout<<"Starting gpu matrix multiplication"<<endl;
     matrixMul <<< blocks, threads >>> (cudaMatrixA, cudaMatrixB, cudaMatrixC, matrixCHeight, matrixCWidth, matrixAWidth);
 
+    
     //Wait for the threads to complete
     cudaDeviceSynchronize();
     /*

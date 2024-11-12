@@ -27,16 +27,24 @@ This project is only intended for educational purposes and was done to help unde
 
 ## Project Structure
 
-
-- `main.cpp`: The main file that is used to format the sample data and perform forwards pass.
-- `Node.cpp`: The implementation of a "node" which is used to store gradients and data.
-- `CompGraph.cpp`: The implementation of the computational graph.
-- `encoding.cpp`: Does the character encoding.
-- `gpuMatMul.cu`: The CUDA implemetation of a matrix multiplication
-- `makefile`: The makefile used to compile the project.
-- `names.txt`: Sample training data containing a large sample of names.
-- `README.md`: Project documentation.
-
+- `version_1`
+   - `main.cpp`: The main file that is used to format the sample data and perform forwards pass.
+   - `Node.cpp`: The implementation of a "node" which is used to store gradients and data.
+   - `CompGraph.cpp`: The implementation of the computational graph.
+   - `encoding.cpp`: Does the character encoding.
+   - `gpuMatMul.cu`: The CUDA implemetation of a matrix multiplication
+   - `makefile`: The makefile used to compile the project.
+   - `names.txt`: Sample training data containing a large sample of names.
+   - `README.md`: Project documentation.
+- `version_2`
+   - `main.cpp`: The main file that is used to format the sample data and perform forwards pass.
+   - `Node.cpp`: The implementation of a "node" which is used to store gradients and data.
+   - `CompGraph.cpp`: The implementation of the computational graph.
+   - `encoding.cpp`: Does the character encoding.
+   - `gpuMatMul.cu`: The CUDA implemetation of a matrix multiplication
+   - `makefile`: The makefile used to compile the project.
+   - `names.txt`: Sample training data containing a large sample of names.
+   - `README.md`: Project documentation.
 
 ## Getting Started
 
@@ -99,6 +107,29 @@ To tune the hyperparameters, simply change their values in main.cpp, the purpose
 - **Loss Function**: The cross-entropy loss function is used to calculate loss with efficient backpropagation.
 - **Weight Initialization**: Weights are initialised randomly using a linear distribution, biases are set to zero at initialisation.
 
+
+## Sample Outputs
+
+Here is a sample of the output that the model generated with 20,000 training loops:
+```
+rahann
+arian
+arish
+landil
+ariah
+arian
+erish
+lynn
+eria
+arie
+richandel
+iran
+hari
+arisha
+arie
+```
+We can see that the model succeeds in generating unique names that are similar to the input dataset.
+Further improvements could be made to help the model generate more diverse names.
 
 ## Roadmap
 
