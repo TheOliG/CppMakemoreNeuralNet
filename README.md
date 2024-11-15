@@ -8,7 +8,7 @@ This project is a **simple neural network** in **C++** that implements a **chara
 ## Overview
 
 
-This project uses a basic neural network approach taken from [A Neural Probabilistic Language Model](https://www.jmlr.org/papers/volume3/bengio03a/bengio03a.pdf), which utilises embedding to predict the next character in a sequence:
+This project uses a basic neural network approach taken from [A Neural Probabilistic Language Model](https://www.jmlr.org/papers/volume3/bengio03a/bengio03a.pdf), which utilises embedding to predict the next character in a sequence
 - **Forward Pass and Backpropagation**: Efficiently propagates through the network and calculates the gradients through a backward pass.
 - **Computational Graphs**: Each computation is represented as a node in a graph (CompGraph.cpp), allowing the model to compute gradients during backpropagation and to manage memory.
 - **GPU Acceleration with CUDA**: Critical components are accelerated using CUDA to leverage GPU performance for matrix operations, this greatly improves the performance of the model.
@@ -28,24 +28,17 @@ This project is only intended for educational purposes and was done to help unde
 ## Project Structure
 
 - `version_1`
-   - `main.cpp`: The main file that is used to format the sample data and perform forwards pass.
-   - `Node.cpp`: The implementation of a "node" which is used to store gradients and data.
-   - `CompGraph.cpp`: The implementation of the computational graph.
-   - `encoding.cpp`: Does the character encoding.
-   - `gpuMatMul.cu`: The CUDA implemetation of a matrix multiplication
-   - `makefile`: The makefile used to compile the project.
-   - `names.txt`: Sample training data containing a large sample of names.
-   - `README.md`: Project documentation.
 - `version_2`
+- `version_3`
    - `main.cpp`: The main file that is used to format the sample data and perform forwards pass.
    - `Node.cpp`: The implementation of a "node" which is used to store gradients and data.
    - `CompGraph.cpp`: The implementation of the computational graph.
    - `encoding.cpp`: Does the character encoding.
-   - `gpuOperationInterface.cu`: The CuBLAS matrix multiplication interface
+   - `gpuOperationInterface.cu`: Custom CuBLAS interface
+   - `nodeOperations.cu`: Forward and backward passes for the computational graph
    - `makefile`: The makefile used to compile the project.
-   - `names.txt`: Sample training data containing a large sample of names.
-   - `README.md`: Project documentation.
-
+- `names.txt`: Sample training data containing a large sample of names.
+- `README.md`: Project documentation.
 ## Getting Started
 
 
@@ -66,6 +59,7 @@ This project is only intended for educational purposes and was done to help unde
 2. **Compile the project**:
    Compile the code using the makefile
    ```bash
+   cd version_3
    make
    ```
 
@@ -73,7 +67,7 @@ This project is only intended for educational purposes and was done to help unde
 3. **Run the project**:
    Run the compiled program with:
    ```bash
-   ./main
+   ./compiledProgram.o
    ```
 
 
@@ -97,43 +91,57 @@ To tune the hyperparameters, simply change their values in main.cpp, the purpose
 - **NUM_ITER**: The number of training iterations to train the model.
 - **LEARNING_RATE**: The learning rate, this rate is reduced when the model has done half of the training.
 
-
-
-
-## Implementation Details
-
-
-- **Activation Function**: `tanh` and `softmax` are implemented as activation functions.
-- **Loss Function**: The cross-entropy loss function is used to calculate loss with efficient backpropagation.
-- **Weight Initialization**: Weights are initialised randomly using a linear distribution, biases are set to zero at initialisation.
-
-
 ## Sample Outputs
 
 Here is a sample of the output that the model generated with 20,000 training loops:
 ```
-rahann
-arian
-arish
-landil
-ariah
-arian
-erish
-lynn
-eria
-arie
-richandel
-iran
-hari
-arisha
-arie
+marson
+brellin
+chnoum
+eyreltons
+nigha
+mioah
+ramira
+deree
+lexh
+havik
+aezoeltuia
+irosa
+tori
+komstee
+ioreely
+nerau
+wilie
+aychil
+liyua
+jbrelynn
+ato
+idetann
+antiai
+brynallien
+ashmini
+lavini
+jaiandic
+tesiyco
+javcyn
+loja
+acnelra
+losi
+lwais
+mautam
+oliviha
 ```
-We can see that the model succeeds in generating unique names that are similar to the input dataset.
-Further improvements could be made to help the model generate more diverse names.
+Obviously some work needs to be done to improve the quality of these names
+
+## Versions
+
+- `Version 1`: Implements a custom GPU matrix multiplication function
+- `Version 2`: Uses CUBLAS to do matrix multiplication
+- `Version 3`: Completely reworks the structure to reduce memory rewrites for nodes
 
 ## Roadmap
 
-
+- [ ] Implement a pool for the GPU memory
 - [ ] Improve backwards and forwards pass efficiency by increasing parallelism
 - [ ] Implement batch normalisation
 - [ ] Implement structure similar to [Wavenet](https://arxiv.org/pdf/1609.03499)
