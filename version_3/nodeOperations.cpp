@@ -127,19 +127,20 @@ void dotProduct(CompGraph* cGraph, Node* nodeA, Node* nodeB, Node* outNode){
     assert(nodeA->width == nodeB->height);
     assert(nodeA != outNode && nodeB != outNode);
 
-    function<void()> forward = [nodeA, nodeB, outNode](){
+    function<void()> forward = [nodeA, nodeB, outNode, cGraph](){
         //Resize output node
         outNode->resize(nodeA->height, nodeB->width);
-        cublasGpuDotProduct(nodeA->values, nodeA->height, nodeA->width, nodeB->values, nodeB->height, nodeB->width, outNode->values, false, false);
+        cublasGpuDotProduct(cGraph->gpuMemPool ,nodeA->values, nodeA->height, nodeA->width, nodeB->values, nodeB->height, nodeB->width, outNode->values, false, false);
     };
 
-    function<void()> backward = [nodeA, nodeB, outNode](){
+    function<void()> backward = [nodeA, nodeB, outNode, cGraph](){
         /*
         firstMatrixGradient = resultingMatrixGradient • secondMatrixValues transposed
         secondMatrixGradient = firstMatrixValues transposed • resultingMatrixGradient
         https://youtu.be/dB-u77Y5a6A?si=e_HMJr3RWuZrmuUb&t=3612 
         */
         cublasGpuDotProduct(
+            cGraph->gpuMemPool,
             outNode->gradients, outNode->height, outNode->width, 
             nodeB->values, nodeB->height, nodeB->width, 
             nodeA->gradients, false, true
@@ -147,6 +148,7 @@ void dotProduct(CompGraph* cGraph, Node* nodeA, Node* nodeB, Node* outNode){
 
         //Calculating the second matrix gradients
         cublasGpuDotProduct(
+            cGraph->gpuMemPool,
             nodeA->values, nodeA->height, nodeA->width, 
             outNode->gradients, outNode->height, outNode->width, 
             nodeB->gradients, true, false

@@ -1,6 +1,12 @@
 #include "CompGraph.hpp"
 
+CompGraph::CompGraph(){
+    this->gpuMemPool = new CudaMemoryPool();
+}
 
+CompGraph::~CompGraph(){
+    delete(gpuMemPool);
+}
 
 void CompGraph::forwardPass(){
     //Go backwards through the topological graph

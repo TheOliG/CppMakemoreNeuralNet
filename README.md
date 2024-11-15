@@ -141,7 +141,7 @@ Obviously some work needs to be done to improve the quality of these names
 
 ## Roadmap
 
-- [ ] Implement a pool for the GPU memory
+- [x] Implement a pool for the GPU memory
 - [ ] Improve backwards and forwards pass efficiency by increasing parallelism
 - [ ] Implement batch normalisation
 - [ ] Implement structure similar to [Wavenet](https://arxiv.org/pdf/1609.03499)

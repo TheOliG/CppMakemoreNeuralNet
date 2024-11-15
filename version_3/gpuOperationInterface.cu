@@ -21,7 +21,7 @@ void checkCudaStatus(cudaError_t status) {
 /*
 Uses cublas to calculate the dotproduct between two matricies
 */
-void cublasGpuDotProduct(double* matrixA, int matrixAHeight, int matrixAWidth, double* matrixB, int matrixBHeight, int matrixBWidth, double* matrixC, bool transposeA, bool transposeB){
+void cublasGpuDotProduct(CudaMemoryPool* memPool, double* matrixA, int matrixAHeight, int matrixAWidth, double* matrixB, int matrixBHeight, int matrixBWidth, double* matrixC, bool transposeA, bool transposeB){
     cublasHandle_t handle;
 
     cublasCreate(&handle);
@@ -42,10 +42,15 @@ void cublasGpuDotProduct(double* matrixA, int matrixAHeight, int matrixAWidth, d
     size_t matrixCBytes = matrixCWidth * matrixCHeight * sizeof(double);
 
     double *cudaMatrixA, *cudaMatrixB, *cudaMatrixC;
+    /*
     checkCudaStatus(cudaMallocManaged(&cudaMatrixA, matrixABytes));
     checkCudaStatus(cudaMallocManaged(&cudaMatrixB, matrixBBytes));
     checkCudaStatus(cudaMallocManaged(&cudaMatrixC, matrixCBytes));
+    */
 
+    cudaMatrixA = memPool->cudaRequestMemory(matrixABytes);
+    cudaMatrixB = memPool->cudaRequestMemory(matrixBBytes);
+    cudaMatrixC = memPool->cudaRequestMemory(matrixCBytes);
 
     //Transfering the matricies to the device (gpu), this also changes the format to column leading
     for(int i = 0; i<matrixAHeight; i++){
@@ -99,13 +104,67 @@ void cublasGpuDotProduct(double* matrixA, int matrixAHeight, int matrixAWidth, d
     }
 
     //Free memory
+    /*
     cudaFree(cudaMatrixA);
     cudaFree(cudaMatrixB);
     cudaFree(cudaMatrixC);
+    */
+    memPool->unreserveMemory(cudaMatrixA);
+    memPool->unreserveMemory(cudaMatrixB);
+    memPool->unreserveMemory(cudaMatrixC);
     cublasDestroy(handle);
 }
 
 
+CudaMemoryPool::CudaMemoryPool(){
+    this->memoryPoolSize = 0;
+}
+
+CudaMemoryPool::~CudaMemoryPool(){
+    for(int i = 0; i<memoryPoolSize; i++){
+        //Check that the memory is not currently being used
+        assert(get<2>(this->memoryPoolArray.at(i)) == false);
+        //Unallocate all memory
+        checkCudaStatus(cudaFree(get<0>(this->memoryPoolArray.at(i))));
+    }
+}
+
+double* CudaMemoryPool::cudaRequestMemory(size_t requestedSize){
+    //Loop through all potential memory blocks
+    for(int i = 0; i<memoryPoolSize; i++){
+        //Check if its being used
+        if(get<2>(this->memoryPoolArray.at(i)) == false){
+            get<2>(this->memoryPoolArray.at(i)) = true;
+            //Resize if its too small
+            if(get<1>(this->memoryPoolArray.at(i)) < requestedSize){
+                checkCudaStatus(cudaFree(get<0>(this->memoryPoolArray.at(i))));
+                checkCudaStatus(cudaMallocManaged(&get<0>(this->memoryPoolArray.at(i)), requestedSize));
+            }
+            return get<0>(this->memoryPoolArray.at(i));
+        }
+    }
+
+    //Create a new memory block
+    memoryPoolSize++;
+    assert(memoryPoolSize<=100);
+
+    checkCudaStatus(cudaMallocManaged(&get<0>(this->memoryPoolArray.at(memoryPoolSize-1)), requestedSize));
+    get<1>(memoryPoolArray.at(memoryPoolSize-1)) = requestedSize;
+    get<2>(memoryPoolArray.at(memoryPoolSize-1)) = true;
+    return get<0>(this->memoryPoolArray.at(memoryPoolSize-1));
+}
+
+void CudaMemoryPool::unreserveMemory(double* memoryAdr){
+    //Loop through all potential memory blocks
+    for(int i = 0; i<memoryPoolSize; i++){
+        if(get<0>(memoryPoolArray.at(i)) == memoryAdr){
+            get<2>(memoryPoolArray.at(i)) = false;
+            return;
+        }
+    }
+    cout<<"Memory does not match any in pool!"<<endl;
+    assert(false);
+}
 
 //nvcc -o gpuOperationInterface gpuOperationInterface.cu -lcublas -lcuda
 
