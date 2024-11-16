@@ -26,8 +26,6 @@ void matrixMul(double* matrixA, double* matrixB, double* outputMatrix, int matri
         outputMatrix[(currentRow * matrixBWidth) + currentCol] = tempTotal;
     }
     //else{assert(false);}
-
-    
 }
 
 //Randomises the values in a matrix between 0 and 1;

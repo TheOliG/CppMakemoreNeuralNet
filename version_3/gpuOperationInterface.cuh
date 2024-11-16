@@ -7,6 +7,7 @@
 #include <cublas_v2.h>
 #include <cuda_runtime.h>
 #include <cassert>
+#include <cmath>
 #include <array>
 #include <tuple>
 #include "cublas_v2.h"
@@ -35,4 +36,4 @@ class CudaMemoryPool{
 
 void cublasGpuDotProduct(CudaMemoryPool* memPool, double* matrixA, int matrixAHeight, int matrixAWidth, double* matrixB, int matrixBHeight, int matrixBWidth, double* matrixC, bool transposeA, bool transposeB);
 
-
+void gpuTanh(CudaMemoryPool* memPool, double* matrixA, int matrixAHeight, int matirixAWidth, double* outMatrix);

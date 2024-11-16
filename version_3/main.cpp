@@ -3,10 +3,10 @@
 int main(){
     //HYPER PARAMETERS 
     int CONTEXT_WINDOW = 4;
-    int LOOKUP_DIMENSIONS = 16;
-    int HIDDEN_LAYER_SIZE = 64;
-    int NUM_EXAMPLES = 32;
-    int NUM_ITER = 20000;
+    int LOOKUP_DIMENSIONS = 64;
+    int HIDDEN_LAYER_SIZE = 2048;
+    int NUM_EXAMPLES = 64;
+    int NUM_ITER = 2000;
     double LEARNING_RATE = 0.01;
 
 
@@ -105,6 +105,10 @@ int main(){
     average(cGraph, logLosses, loss);
 
 
+    double totalForwardTime = 0.;
+    double totalBackwardTime = 0.;
+    double totalUpdateTime = 0;
+
     for(int curItter = 0; curItter<=NUM_ITER; curItter++){
         for(int i = 0; i<NUM_EXAMPLES; i++){
             pair<vector<int>, int> curExample = allDataFormatted.at(rand() % allDataFormatted.size());
@@ -114,11 +118,12 @@ int main(){
             expectedValues->getValue(i, curExample.second) = 1;
         }
 
-
+        auto t1 = chrono::high_resolution_clock::now();
         cGraph->forwardPass();
         loss->getGrad(0,0) = 1.;
+        auto t2 = chrono::high_resolution_clock::now();
         cGraph->backwardPass();
-
+        auto t3 = chrono::high_resolution_clock::now();
         for(Node* param : params){
             for(int i = 0; i<param->height; i++){
                 for(int j = 0; j<param->width; j++){
@@ -131,12 +136,28 @@ int main(){
                 }
             }
         }
+        auto t4 = chrono::high_resolution_clock::now();
+
+        chrono::duration<double, milli> forwardPassTime = t2 - t1;
+        chrono::duration<double, milli> backwardPassTime = t3 - t2;
+        chrono::duration<double, milli> updateTime = t4 - t3;
+
+        totalForwardTime+=forwardPassTime.count();
+        totalBackwardTime+=backwardPassTime.count();
+        totalUpdateTime+=updateTime.count();
         
         if(curItter % 100 == 0){
-            softmaxNode->print();
 
             cout<<curItter<<"/"<<NUM_ITER<<endl;
             
+            cout<<"Average Forward pass time: "<<totalForwardTime/(double)(curItter + 1.)<<endl;
+            cout<<"Average Backward pass time: "<<totalBackwardTime/(double)(curItter + 1.)<<endl;
+            cout<<"Average Update pass time: "<<totalUpdateTime/(double)(curItter + 1.)<<endl;
+            /*
+            cout<<"Forward pass time: "<<forwardPassTime.count()<<endl;
+            cout<<"Backward pass time: "<<backwardPassTime.count()<<endl;
+            cout<<"Update time: "<<updateTime.count()<<endl;
+            */
             loss->print();
         }
         

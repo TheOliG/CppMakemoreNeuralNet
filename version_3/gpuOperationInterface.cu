@@ -115,6 +115,58 @@ void cublasGpuDotProduct(CudaMemoryPool* memPool, double* matrixA, int matrixAHe
     cublasDestroy(handle);
 }
 
+__global__
+void cudaTanh(double* matrixA,  int matrixAHeight, int matrixAWidth, double* outputMatrix)
+{   
+    //Because we set up the blocks and threads to match with matrix C we can access the current row by looking at the y dimention
+    int currentRow = (blockIdx.y * blockDim.y) + threadIdx.y;
+    //The same can be done to get the current collumn by accessing the x dimention
+    int currentCol = (blockIdx.x * blockDim.x) + threadIdx.x;
+
+    //We need to check if it is in bounds, it is normal for it to be out of bounds when not a square number
+    if(currentRow < matrixAHeight && currentCol < matrixAWidth){
+        //Write to the output
+        outputMatrix[ACCESSROWLEADING2D(currentRow, currentCol, matrixAWidth)] = tanh(matrixA[ACCESSROWLEADING2D(currentRow, currentCol, matrixAWidth)]);
+    }
+}
+
+
+
+void gpuTanh(CudaMemoryPool* memPool, double* matrixA, int matrixAHeight, int matirixAWidth, double* outMatrix){
+    int outMatrixHeight = matrixAHeight;
+    int outMatrixWidth = matirixAWidth;
+
+    size_t matrixABytes = matrixAHeight * matirixAWidth * sizeof(double);
+    size_t outMatrixBytes = matrixABytes;
+
+    double* cudaMatrixA = memPool->cudaRequestMemory(matrixABytes);
+    double* cudaOutMatrix = memPool->cudaRequestMemory(outMatrixBytes);
+
+    //Copy over
+    checkCudaStatus(cudaMemcpy(cudaMatrixA, matrixA, matrixABytes, cudaMemcpyHostToDevice));
+
+    //Define the kernel parameters
+    int threadWidth = 16;
+    int threadHeight = 16;
+    int blockWidth = (outMatrixWidth + threadWidth - 1)/threadWidth;
+    int blockHeight = (outMatrixHeight + threadHeight -1)/threadHeight;
+    dim3 threads(threadWidth,threadHeight);
+    dim3 blocks(blockWidth, blockHeight);
+
+    //Launch the kernel
+    //cout<<"Starting gpu matrix multiplication"<<endl;
+    cudaTanh <<< blocks, threads >>> (cudaMatrixA, matrixAHeight, matirixAWidth, cudaOutMatrix);
+
+    
+    //Wait for the threads to complete
+    checkCudaStatus(cudaDeviceSynchronize());
+
+    checkCudaStatus(cudaMemcpy(outMatrix, cudaOutMatrix, outMatrixBytes, cudaMemcpyDeviceToHost));
+
+    memPool->unreserveMemory(cudaMatrixA);
+    memPool->unreserveMemory(cudaOutMatrix);
+}
+
 
 CudaMemoryPool::CudaMemoryPool(){
     this->memoryPoolSize = 0;

@@ -309,8 +309,11 @@ outNode:
 void tanhOperation(CompGraph* cGraph, Node* inNode, Node* outNode){
     outNode->resize(inNode->height, inNode->width);
 
-    function<void()> forward = [inNode, outNode](){
+    function<void()> forward = [inNode, outNode, cGraph](){
         outNode->resize(inNode->height, inNode->width);
+        //Gpu tanh is quite a bit slower for some reason
+        //gpuTanh(cGraph->gpuMemPool, inNode->values, inNode->height, inNode->width, outNode->values);
+        /**/
         for(int i = 0; i<outNode->height; i++){
             for(int j = 0; j<inNode->width; j++){
                 outNode->getValue(i,j) = tanh(inNode->getValue(i,j));

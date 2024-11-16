@@ -4,6 +4,7 @@
 #include <functional>
 #include <fstream>
 #include <random>
+#include <chrono>
 
 #include "Node.hpp"
 #include "CompGraph.hpp"
