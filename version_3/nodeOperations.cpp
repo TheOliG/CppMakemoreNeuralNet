@@ -313,7 +313,29 @@ void tanhOperation(CompGraph* cGraph, Node* inNode, Node* outNode){
         outNode->resize(inNode->height, inNode->width);
         //Gpu tanh is quite a bit slower for some reason
         //gpuTanh(cGraph->gpuMemPool, inNode->values, inNode->height, inNode->width, outNode->values);
-        /**/
+        /*
+
+        //Multithreaded implementation is even slower :(
+        vector<thread> threads; 
+
+        //Define thread function
+        function<void(int row)> func = [inNode, outNode](int row){
+            for(int col = 0; col<inNode->width; col++){
+                outNode->getValue(row,col) = tanh(inNode->getValue(row,col));
+            }
+        };
+
+        //Create threads
+        for(int i = 0; i<inNode->height; i++){
+            threads.emplace_back(func,i);
+        }
+
+        //Wait for threads
+        for(int i = 0; i<threads.size(); i++){
+            threads.at(i).join();
+        }
+        */
+        
         for(int i = 0; i<outNode->height; i++){
             for(int j = 0; j<inNode->width; j++){
                 outNode->getValue(i,j) = tanh(inNode->getValue(i,j));

@@ -3,6 +3,8 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
+#include <thread>
+#include <array>
 
 #include "CompGraph.hpp"
 #include "Node.hpp"

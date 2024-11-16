@@ -27,8 +27,8 @@ Node::Node(int height, int width, bool randomiseValues, bool parameterNode){
 
 //Deconstructor
 Node::~Node(){
-    delete this->values;
-    delete this->gradients;
+    free(this->values);
+    free(this->gradients);
 }
 
 //Returns a refrence to the value at the given row and col
