@@ -17,23 +17,15 @@
 
 using namespace std;
 
+void checkCudaStatus(cudaError_t status);
+void checkCublasStatus(cublasStatus_t status);
 
-class CudaMemoryPool{
-    public:
-        int memoryPoolMaxSize = 100;
-        //Contains: allocated memory, the size of that memory and a bool that shows if its being used
-        std::array<tuple<double*, size_t, bool>, 100> memoryPoolArray;
-
-        int memoryPoolSize;
-        
-        //Cuda memory pool, can allocate up to 100 different blocks of memory
-        CudaMemoryPool();
-        ~CudaMemoryPool();
-        double* cudaRequestMemory(size_t requestedSize);
-        void unreserveMemory(double* memAddress);      
-};
-
-
-void cublasGpuDotProduct(CudaMemoryPool* memPool, double* matrixA, int matrixAHeight, int matrixAWidth, double* matrixB, int matrixBHeight, int matrixBWidth, double* matrixC, bool transposeA, bool transposeB);
-
-void gpuTanh(CudaMemoryPool* memPool, double* matrixA, int matrixAHeight, int matirixAWidth, double* outMatrix);
+void cublasGpuDotProduct(double* cudaMatrixA, int matrixAHeight, int matrixAWidth, double* cudaMatrixB, int matrixBHeight, int matrixBWidth, double* cudaMatrixC, bool transposeA, bool transposeB);
+void gpuEncode(double* cudaIndexes, int indexesHeight, int indexesWidth, double* cudaEmbeddingTable, int embeddingHeight, int embeddingWidth, double* cudaOutMatrix, bool backwards = false);
+void gpuAverage(double* cudaInput, int inputHeight, int inputWidth, double* cudaOutMatrix, bool backwards = false);
+void gpuCrossEntropyLoss(double* cudaInput, int inputHeight, int inputWidth, double* cudaExpected, double* cudaSoftmax, double* cudaOutput);
+void gpuCrossEntropyLossBackwards(double* cudaInputGradients, int inputHeight, int inputWidth, double* cudaExpected, double* cudaSoftmax, double* cudaOutputGradients);
+void gpuAddVector(double* cudaInputMatrix, int inputHeight, int inputWidth, double* cudaInputVector , double* cudaOutMatrix,bool backwards = false);
+void gpuTanhOperation(double* cudaInputMatrix, int inputHeight, int inputWidth, double* cudaOutMatrix);
+void gpuTanhOperationBackwards(double* cudaInputMatrixGradients, int inputHeight, int inputWidth, double* cudaOutMatrixGradients, double* cudaOutMatrixValues);
+void gpuLearning(double* cudaValues, int height, int width, double* cudaGradients, double learningRate);

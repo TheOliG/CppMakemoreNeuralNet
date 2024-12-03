@@ -1,11 +1,33 @@
 #include "main.hpp"
 
 int main(){
+    CompGraph* cGraph = new CompGraph();
+
+
+    Node* n0 = new Node(2,2);
+    Node* n1 = new Node(2,2);
+    Node* n2 = new Node();
+    Node* n3 = new Node();
+    Node* n4 = new Node();
+    Node* n5 = new Node();
+    Node* n6 = new Node();
+    Node* n7 = new Node();
+    Node* n8 = new Node();
+    Node* n9 = new Node();
+
+    n1->getValue(0,0) = 1.;
+    n1->getValue(1,0) = 1.;
+    crossEntropyLoss(cGraph, n0, n1, n2, n3);
+
+    cGraph->forwardPass();
+
+
+    /*
     //HYPER PARAMETERS 
     int CONTEXT_WINDOW = 4;
-    int LOOKUP_DIMENSIONS = 64;
-    int HIDDEN_LAYER_SIZE = 2048;
-    int NUM_EXAMPLES = 64;
+    int LOOKUP_DIMENSIONS = 32;
+    int HIDDEN_LAYER_SIZE = 128;
+    int NUM_EXAMPLES = 32;
     int NUM_ITER = 2000;
     double LEARNING_RATE = 0.01;
 
@@ -59,7 +81,7 @@ int main(){
         }
         cout<<" --> "<<decodeChar(tempPair.second, validChar)<<endl;
     }
-    */
+    
 
 
     CompGraph* cGraph = new CompGraph();
@@ -74,13 +96,18 @@ int main(){
 
     vector<Node*> params = {lookupTable, hiddenLayerInWeights, hiddenLayerOutWeights, hiddenLayerInBiases, logitBiases};
 
+
     for(int i = 0; i<hiddenLayerOutWeights->height; i++){
         for(int j = 0; j<hiddenLayerOutWeights->width; j++){
             hiddenLayerOutWeights->getValue(i,j) *= 0.01;
         }
     }
 
-    hiddenLayerInWeights->getValue(0,1) += 20.;
+    for(Node* param : params){
+        param->copyValuesToGpu();
+    }
+
+
 
     //Special nodes:
     Node* indexes = new Node(NUM_EXAMPLES, CONTEXT_WINDOW);
@@ -109,6 +136,7 @@ int main(){
     double totalBackwardTime = 0.;
     double totalUpdateTime = 0;
 
+    allDataFormatted = {allDataFormatted.at(0)};
     for(int curItter = 0; curItter<=NUM_ITER; curItter++){
         for(int i = 0; i<NUM_EXAMPLES; i++){
             pair<vector<int>, int> curExample = allDataFormatted.at(rand() % allDataFormatted.size());
@@ -117,24 +145,22 @@ int main(){
             }
             expectedValues->getValue(i, curExample.second) = 1;
         }
+        indexes->copyValuesToGpu();
+        expectedValues->copyValuesToGpu();
 
         auto t1 = chrono::high_resolution_clock::now();
         cGraph->forwardPass();
-        loss->getGrad(0,0) = 1.;
         auto t2 = chrono::high_resolution_clock::now();
+        loss->getGrad(0,0) = 1.;
+        loss->copyGradientsToGpu();
         cGraph->backwardPass();
         auto t3 = chrono::high_resolution_clock::now();
+        //Update params
         for(Node* param : params){
-            for(int i = 0; i<param->height; i++){
-                for(int j = 0; j<param->width; j++){
-                    if((double)curItter/(double)NUM_ITER < 0.5){
-                        param->getValue(i,j) += -LEARNING_RATE * param->getGrad(i,j);
-                    }
-                    else{
-                        param->getValue(i,j) += -LEARNING_RATE * param->getGrad(i,j) * 0.5;
-                    }
-                }
-            }
+            gpuLearning(
+                param->cudaValues->cudaMemPtr, param->height, param->width, 
+                param->cudaGradients->cudaMemPtr, LEARNING_RATE
+            );
         }
         auto t4 = chrono::high_resolution_clock::now();
 
@@ -157,45 +183,16 @@ int main(){
             cout<<"Forward pass time: "<<forwardPassTime.count()<<endl;
             cout<<"Backward pass time: "<<backwardPassTime.count()<<endl;
             cout<<"Update time: "<<updateTime.count()<<endl;
-            */
+            
+            loss->getValuesFromGpu();
             loss->print();
         }
         
         cGraph->resetVisitedGradients();
+        cGraph->transferAllToGpu(true);
         indexes->resetValues();
         expectedValues->resetValues();
     }
-
-
-    indexes->resize(1, indexes->width);
-    expectedValues->resize(1, expectedValues->width);
-    
-    indexes->resetValues();
-
-    while (true)
-    {
-        cGraph->forwardPass();
-
-        double randNum = (double)rand()/(double)RAND_MAX;
-        double tempTotal = 0.;
-        for(int i = 0; i<softmaxNode->width; i++){
-            tempTotal += softmaxNode->getValue(0,i);
-            if(tempTotal >= randNum){
-                if(i != 0){
-                    for(int j = 0; j<indexes->width-1; j++){
-                        indexes->getValue(0,j) = indexes->getValue(0,j+1);
-                    }
-                    indexes->getValue(0,indexes->width - 1) = i;
-                    cout<<decodeChar(i, validChar);
-                }
-                else{
-                    indexes->resetValues();
-                    cout<<endl;
-                }
-                break;
-            }
-        }
-    }
-    
+    */
 }
 

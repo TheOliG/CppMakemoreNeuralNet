@@ -25,30 +25,20 @@ void embed(CompGraph* compGraph, Node* indexes, Node* lookupTable, Node* output)
     
     //Function for the forwards pass
     function<void()> forward = [indexes, lookupTable, output](){
-        //Ensure output is the correct size
-        output->resize(indexes->height, indexes->width * lookupTable->width);
-        //Loop through all indexes
-        for(int i = 0; i<indexes->height; i++){
-            for(int j = 0; j<indexes->width; j++){
-                //Add the lookup values to the out matrix
-                for(int k = 0; k<lookupTable->width; k++){
-                    output->getValue(i, (j * lookupTable->width) + k) = lookupTable->getValue(indexes->getValue(i, j), k);
-                }
-            }
-        }
+        gpuEncode(
+            indexes->cudaValues->cudaMemPtr, indexes->height, indexes->width, 
+            lookupTable->cudaValues->cudaMemPtr, lookupTable->height, lookupTable->width,
+            output->cudaValues->cudaMemPtr
+        );
     };
 
     //Function for the backwards pass
     function<void()> backward = [indexes, lookupTable, output](){
-        //Loop through all indexes
-        for(int i = 0; i<indexes->height; i++){
-            for(int j = 0; j<indexes->width; j++){
-                //Add the lookup values to the out matrix
-                for(int k = 0; k<lookupTable->width; k++){
-                    lookupTable->getGrad(indexes->getValue(i, j), k) += output->getGrad(i, (j * lookupTable->width) + k);
-                }
-            }
-        }
+        gpuEncode(
+            indexes->cudaValues->cudaMemPtr, indexes->height, indexes->width, 
+            lookupTable->cudaGradients->cudaMemPtr, lookupTable->height, lookupTable->width,
+            output->cudaGradients->cudaMemPtr, true
+        );
     };
     //Store on the computational graph
     compGraph->addToForwardPass(forward);
@@ -78,20 +68,11 @@ void average(CompGraph* compGraph, Node* inputNode, Node* outputNode){
     function<void()> forward = [inputNode, outputNode](){
         //Resize output node to correct size
         outputNode->resize(1,1);
-        double total = 0.;
-        //Loop over all inputs
-        for(int i = 0; i<inputNode->width * inputNode->height; i++){
-            total += inputNode->values[i];
-        }
-        //Calculate average
-        outputNode->getValue(0, 0) = (total)/(double)(inputNode->width * inputNode->height);
+        gpuAverage(inputNode->cudaValues->cudaMemPtr, inputNode->height, inputNode->width, outputNode->cudaValues->cudaMemPtr);
     };
 
     function<void()> backward = [inputNode, outputNode](){
-        //Loop over all inputs
-        for(int i = 0; i<inputNode->width * inputNode->height; i++){
-            inputNode->gradients[i] += (outputNode->getGrad(0, 0))/(double)(inputNode->width * inputNode->height);
-        }
+        gpuAverage(inputNode->cudaGradients->cudaMemPtr, inputNode->height, inputNode->width, outputNode->cudaGradients->cudaMemPtr, true);
     };
     
     //Add functions to compGraph 
@@ -130,7 +111,7 @@ void dotProduct(CompGraph* cGraph, Node* nodeA, Node* nodeB, Node* outNode){
     function<void()> forward = [nodeA, nodeB, outNode, cGraph](){
         //Resize output node
         outNode->resize(nodeA->height, nodeB->width);
-        cublasGpuDotProduct(cGraph->gpuMemPool ,nodeA->values, nodeA->height, nodeA->width, nodeB->values, nodeB->height, nodeB->width, outNode->values, false, false);
+        cublasGpuDotProduct(nodeA->cudaValues->cudaMemPtr, nodeA->height, nodeA->width, nodeB->cudaValues->cudaMemPtr, nodeB->height, nodeB->width, outNode->cudaValues->cudaMemPtr, false, false);
     };
 
     function<void()> backward = [nodeA, nodeB, outNode, cGraph](){
@@ -140,18 +121,16 @@ void dotProduct(CompGraph* cGraph, Node* nodeA, Node* nodeB, Node* outNode){
         https://youtu.be/dB-u77Y5a6A?si=e_HMJr3RWuZrmuUb&t=3612 
         */
         cublasGpuDotProduct(
-            cGraph->gpuMemPool,
-            outNode->gradients, outNode->height, outNode->width, 
-            nodeB->values, nodeB->height, nodeB->width, 
-            nodeA->gradients, false, true
+            outNode->cudaGradients->cudaMemPtr, outNode->height, outNode->width, 
+            nodeB->cudaValues->cudaMemPtr, nodeB->height, nodeB->width, 
+            nodeA->cudaGradients->cudaMemPtr, false, true
         );
 
         //Calculating the second matrix gradients
         cublasGpuDotProduct(
-            cGraph->gpuMemPool,
-            nodeA->values, nodeA->height, nodeA->width, 
-            outNode->gradients, outNode->height, outNode->width, 
-            nodeB->gradients, true, false
+            nodeA->cudaValues->cudaMemPtr, nodeA->height, nodeA->width, 
+            outNode->cudaGradients->cudaMemPtr, outNode->height, outNode->width, 
+            nodeB->cudaGradients->cudaMemPtr, true, false
         ); 
     };
 
@@ -200,40 +179,16 @@ void crossEntropyLoss(CompGraph* cGraph, Node* inNode, Node* expectedValues, Nod
         outNode->resize(inNode->height, 1);
         softmaxNode->resize(inNode->height, inNode->width);
         //Loop over all rows
-        for(int i = 0; i<inNode->height; i++){
-            //Calculate the max value
-            double maxVal = inNode->getValue(i,0);
-            for(int j = 1; j<inNode->width; j++){
-                if(maxVal<inNode->getValue(i,j)){
-                    maxVal = inNode->getValue(i,j);
-                }
-            }
-            
-            //Calculate denominator
-            double total = 0.;
-            for(int j = 0; j<inNode->width; j++){
-                total += exp(inNode->getValue(i,j) - maxVal);
-            }
-
-            //Calculate the negative log loss
-            double logTotal = 0.;
-            for(int j = 0; j<inNode->width; j++){
-                softmaxNode->getValue(i,j) = exp(inNode->getValue(i,j) - maxVal) / total;
-                logTotal += expectedValues->getValue(i, j) * -log(softmaxNode->getValue(i,j));
-            }
-            outNode->getValue(i, 0) = logTotal;
-        }
+        gpuCrossEntropyLoss(inNode->cudaValues->cudaMemPtr, inNode->height, inNode->width, expectedValues->cudaValues->cudaMemPtr, softmaxNode->cudaValues->cudaMemPtr, outNode->cudaValues->cudaMemPtr);
     };
 
     function<void()> backward = [inNode, expectedValues, outNode, softmaxNode](){
-        //Loop over all rows
-        for(int i = 0; i<inNode->height; i++){
-            //Calculate the max value
-            
-            for(int j = 0; j<inNode->width; j++){
-                inNode->getGrad(i, j) += (softmaxNode->getValue(i,j) - expectedValues->getValue(i,j)) * outNode->getGrad(i,0);
-            }
-        }
+        gpuCrossEntropyLossBackwards(
+            inNode->cudaGradients->cudaMemPtr, inNode->height, inNode->width, \
+            expectedValues->cudaValues->cudaMemPtr, 
+            softmaxNode->cudaValues->cudaMemPtr,
+            outNode->cudaGradients->cudaMemPtr
+        );
     };
 
     cGraph->addToForwardPass(forward);
@@ -267,23 +222,15 @@ void addVector(CompGraph* cGraph, Node* inMatrix, Node* inVector, Node* outNode)
 
     function<void()> forward = [inMatrix, inVector, outNode](){
         outNode->resize(inMatrix->height, inMatrix->width);
-        for(int i = 0; i<inMatrix->height; i++){
-            for(int j = 0; j<inMatrix->width; j++){
-                outNode->getValue(i, j) = inMatrix->getValue(i,j) + inVector->getValue(0, j);
-            }
-        }
+        gpuAddVector(inMatrix->cudaValues->cudaMemPtr, inMatrix->height, inMatrix->width, inVector->cudaValues->cudaMemPtr, outNode->cudaValues->cudaMemPtr);
     };
 
     function<void()> backward = [inMatrix, inVector, outNode](){
-        for(int i = 0; i<inMatrix->height; i++){
-            for(int j = 0; j<inMatrix->width; j++){
-                //We only want to update the gradient if they are different nodes
-                if(inMatrix != outNode){
-                    inMatrix->getGrad(i,j) += outNode->getGrad(i,j);
-                }
-                inVector->getGrad(0,j) += outNode->getGrad(i, j);
-            }
-        }
+        gpuAddVector(
+            inMatrix->cudaGradients->cudaMemPtr, inMatrix->height, inMatrix->width, 
+            inVector->cudaGradients->cudaMemPtr,
+            outNode->cudaGradients->cudaMemPtr, true
+        );
     };
 
     cGraph->addToForwardPass(forward);
@@ -311,49 +258,15 @@ void tanhOperation(CompGraph* cGraph, Node* inNode, Node* outNode){
 
     function<void()> forward = [inNode, outNode, cGraph](){
         outNode->resize(inNode->height, inNode->width);
-        //Gpu tanh is quite a bit slower for some reason
-        //gpuTanh(cGraph->gpuMemPool, inNode->values, inNode->height, inNode->width, outNode->values);
-        /*
-
-        //Multithreaded implementation is even slower :(
-        vector<thread> threads; 
-
-        //Define thread function
-        function<void(int row)> func = [inNode, outNode](int row){
-            for(int col = 0; col<inNode->width; col++){
-                outNode->getValue(row,col) = tanh(inNode->getValue(row,col));
-            }
-        };
-
-        //Create threads
-        for(int i = 0; i<inNode->height; i++){
-            threads.emplace_back(func,i);
-        }
-
-        //Wait for threads
-        for(int i = 0; i<threads.size(); i++){
-            threads.at(i).join();
-        }
-        */
-        
-        for(int i = 0; i<outNode->height; i++){
-            for(int j = 0; j<inNode->width; j++){
-                outNode->getValue(i,j) = tanh(inNode->getValue(i,j));
-            }
-        }
+        gpuTanhOperation(inNode->cudaValues->cudaMemPtr, inNode->height, inNode->width, outNode->cudaValues->cudaMemPtr);
     };
 
     function<void()> backward = [inNode, outNode](){
-        for(int i = 0; i<outNode->height; i++){
-            for(int j = 0; j<inNode->width; j++){
-                if(inNode != outNode){
-                    inNode->getGrad(i, j) += (1. - pow(outNode->getValue(i,j), 2)) * outNode->getGrad(i,j);
-                }
-                else{
-                    inNode->getGrad(i, j) = (1. - pow(outNode->getValue(i,j), 2)) * outNode->getGrad(i,j);
-                }
-            }
-        }
+        gpuTanhOperationBackwards(
+            inNode->cudaGradients->cudaMemPtr, inNode->height, inNode->width, 
+            outNode->cudaGradients->cudaMemPtr, 
+            outNode->cudaValues->cudaMemPtr
+        );
     };
 
     cGraph->addToForwardPass(forward);

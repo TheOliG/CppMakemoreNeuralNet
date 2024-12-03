@@ -4,7 +4,6 @@
 #include <unordered_set>
 
 #include "Node.hpp"
-#include "gpuOperationInterface.cuh"
 
 using namespace std;
 
@@ -20,8 +19,6 @@ class CompGraph {
         //The vector containing the fuctions used to compute gradients, topological order
         vector<function<void()>> backwardPassVec;
 
-        //Gpu memory pool
-        CudaMemoryPool* gpuMemPool;
 
 
         CompGraph();
@@ -31,4 +28,5 @@ class CompGraph {
         void addToForwardPass(function<void()> func);
         void addToBackwardsPass(function<void()> func);
         void resetVisitedGradients();
+        void transferAllToGpu(bool gradients = false);
 };

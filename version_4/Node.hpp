@@ -5,6 +5,8 @@
 #include <cassert>
 #include <iostream>
 
+#include "CudaMemoryClass.cuh"
+
 using namespace std;
 
 class Node{
@@ -12,6 +14,9 @@ class Node{
         //The gradients and value arrays
         double* values;
         double* gradients;
+
+        CudaMemoryClass* cudaValues;
+        CudaMemoryClass* cudaGradients;
 
         //The dimensions of the matrix
         int height;
@@ -31,6 +36,13 @@ class Node{
         //Getters
         double& getValue(int row, int col);
         double& getGrad(int row, int col);
+
+        //GPU uploading
+        void copyValuesToGpu();
+        void copyGradientsToGpu();
+
+        void getValuesFromGpu();
+        void getGradientsFromGpu();
 
 
         //For resetting values

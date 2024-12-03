@@ -3,10 +3,10 @@
 int main(){
     //HYPER PARAMETERS 
     int CONTEXT_WINDOW = 4;
-    int LOOKUP_DIMENSIONS = 64;
-    int HIDDEN_LAYER_SIZE = 2048;
-    int NUM_EXAMPLES = 64;
-    int NUM_ITER = 2000;
+    int LOOKUP_DIMENSIONS = 32;
+    int HIDDEN_LAYER_SIZE = 128;
+    int NUM_EXAMPLES = 32;
+    int NUM_ITER = 10000;
     double LEARNING_RATE = 0.01;
 
 
@@ -80,8 +80,6 @@ int main(){
         }
     }
 
-    hiddenLayerInWeights->getValue(0,1) += 20.;
-
     //Special nodes:
     Node* indexes = new Node(NUM_EXAMPLES, CONTEXT_WINDOW);
     Node* expectedValues = new Node(NUM_EXAMPLES, validChar.size());
@@ -108,7 +106,6 @@ int main(){
     double totalForwardTime = 0.;
     double totalBackwardTime = 0.;
     double totalUpdateTime = 0;
-
     for(int curItter = 0; curItter<=NUM_ITER; curItter++){
         for(int i = 0; i<NUM_EXAMPLES; i++){
             pair<vector<int>, int> curExample = allDataFormatted.at(rand() % allDataFormatted.size());
