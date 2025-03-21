@@ -128,9 +128,26 @@ void dotProduct(CompGraph* cGraph, Node* nodeA, Node* nodeB, Node* outNode){
     assert(nodeA != outNode && nodeB != outNode);
 
     function<void()> forward = [nodeA, nodeB, outNode, cGraph](){
+
         //Resize output node
         outNode->resize(nodeA->height, nodeB->width);
-        cublasGpuDotProduct(cGraph->gpuMemPool ,nodeA->values, nodeA->height, nodeA->width, nodeB->values, nodeB->height, nodeB->width, outNode->values, false, false);
+        //Old implementation
+        //cublasGpuDotProductOld(cGraph->gpuMemPool ,nodeA->values, nodeA->height, nodeA->width, nodeB->values, nodeB->height, nodeB->width, outNode->values, false, false);
+        
+        nodeA->copyValuesToGpu();
+        nodeB->copyValuesToGpu();
+        outNode->copyValuesToGpu();
+        cublasGpuDotProduct(
+            nodeA->cudaValues->cudaMemPtr, nodeA->height, nodeA->width, 
+            nodeB->cudaValues->cudaMemPtr, nodeB->height, nodeB->width, 
+            outNode->cudaValues->cudaMemPtr, 
+            false, false
+        );
+        nodeA->getValuesFromGpu();
+        nodeB->getValuesFromGpu();
+        outNode->getValuesFromGpu();
+        
+        
     };
 
     function<void()> backward = [nodeA, nodeB, outNode, cGraph](){
@@ -139,7 +156,37 @@ void dotProduct(CompGraph* cGraph, Node* nodeA, Node* nodeB, Node* outNode){
         secondMatrixGradient = firstMatrixValues transposed • resultingMatrixGradient
         https://youtu.be/dB-u77Y5a6A?si=e_HMJr3RWuZrmuUb&t=3612 
         */
+        nodeA->copyValuesToGpu();
+        nodeB->copyValuesToGpu();
+        outNode->copyValuesToGpu();
+        
+        nodeA->copyGradientsToGpu();
+        nodeB->copyGradientsToGpu();
+        outNode->copyGradientsToGpu();
+
         cublasGpuDotProduct(
+            outNode->cudaGradients->cudaMemPtr, outNode->height, outNode->width, 
+            nodeB->cudaValues->cudaMemPtr, nodeB->height, nodeB->width, 
+            nodeA->cudaGradients->cudaMemPtr, false, true
+        );
+
+        cublasGpuDotProduct(
+            nodeA->cudaValues->cudaMemPtr, nodeA->height, nodeA->width, 
+            outNode->cudaGradients->cudaMemPtr, outNode->height, outNode->width, 
+            nodeB->cudaGradients->cudaMemPtr, true, false
+        ); 
+
+        nodeA->getValuesFromGpu();
+        nodeB->getValuesFromGpu();
+        outNode->getValuesFromGpu();
+
+        nodeA->getGradientsFromGpu();
+        nodeB->getGradientsFromGpu();
+        outNode->getGradientsFromGpu();
+
+        /*
+        //Old Implementation:
+        cublasGpuDotProductOld(
             cGraph->gpuMemPool,
             outNode->gradients, outNode->height, outNode->width, 
             nodeB->values, nodeB->height, nodeB->width, 
@@ -147,12 +194,14 @@ void dotProduct(CompGraph* cGraph, Node* nodeA, Node* nodeB, Node* outNode){
         );
 
         //Calculating the second matrix gradients
-        cublasGpuDotProduct(
+        cublasGpuDotProductOld(
             cGraph->gpuMemPool,
             nodeA->values, nodeA->height, nodeA->width, 
             outNode->gradients, outNode->height, outNode->width, 
             nodeB->gradients, true, false
         ); 
+        */
+        
     };
 
     cGraph->addToForwardPass(forward);

@@ -1,6 +1,7 @@
 #include "Node.hpp"
 
 
+
 //Constructor
 Node::Node(int height, int width, bool randomiseValues, bool parameterNode){
     this->height = height;
@@ -10,8 +11,16 @@ Node::Node(int height, int width, bool randomiseValues, bool parameterNode){
 
     //Allocate memory for the arrays
     this->matrixBytes = height*width*sizeof(double);
-        this->values = (double*) malloc(this->matrixBytes);
-        this->gradients = (double*) malloc(this->matrixBytes);
+    this->values = (double*) malloc(this->matrixBytes);
+    this->gradients = (double*) malloc(this->matrixBytes);
+
+    //Allocate GPU memory
+    this->cudaValues = new CudaMemoryClass();
+    this->cudaGradients = new CudaMemoryClass();
+    this->cudaValues->setUsedMemory(matrixBytes);
+    this->cudaGradients->setUsedMemory(matrixBytes);
+    
+
     
     for(int i = 0; i<height * width; i++){
         double tempVal = 0;
@@ -31,14 +40,32 @@ Node::~Node(){
     free(this->gradients);
 }
 
+void Node::copyValuesToGpu(){
+    cudaValues->transferToDevice(values);
+}
+
+void Node::copyGradientsToGpu(){
+    cudaGradients->transferToDevice(gradients);
+}
+
+void Node::getValuesFromGpu(){
+    cudaValues->transferToHost(values);
+}
+
+void Node::getGradientsFromGpu(){
+    cudaGradients->transferToHost(gradients);
+}
+
+
+
 //Returns a refrence to the value at the given row and col
 double& Node::getValue(int row, int col){
-    return this->values[(row * this->width) + col];
+    return this->values[ACCESSCOLLEADING2D(row, col, this->height)];
 }
 
 //Returns a refrence to the gradient at the given row and col
 double& Node::getGrad(int row, int col){
-    return this->gradients[(row * this->width) + col];
+    return this->gradients[ACCESSCOLLEADING2D(row, col, this->height)];
 }
 
 //Sets all the values to a given scalar
@@ -55,7 +82,7 @@ void Node::resetGrads(double val){
     }
 }
 
-//This resizes the Node, posibly destroying the data inside it
+//This resizes the Node, possibly destroying the data inside it
 void Node::resize(int height, int width){
     size_t newSize = height * width * sizeof(double);
     if(newSize > this->matrixBytes){
@@ -70,6 +97,11 @@ void Node::resize(int height, int width){
         //Setting the new matrixBytes
         this->matrixBytes = newSize;
     }
+
+    //Allocating new space in the gpu
+    this->cudaValues->setUsedMemory(newSize);
+    this->cudaGradients->setUsedMemory(newSize);
+
     this->height = height;
     this->width = width;
 }

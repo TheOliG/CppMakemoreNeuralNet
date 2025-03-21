@@ -34,6 +34,9 @@ class CudaMemoryPool{
 };
 
 
-void cublasGpuDotProduct(CudaMemoryPool* memPool, double* matrixA, int matrixAHeight, int matrixAWidth, double* matrixB, int matrixBHeight, int matrixBWidth, double* matrixC, bool transposeA, bool transposeB);
-
+void cublasGpuDotProduct(double* cudaMatrixA, int matrixAHeight, int matrixAWidth, double* cudaMatrixB, int matrixBHeight, int matrixBWidth, double* cudaMatrixC, bool transposeA, bool transposeB);
+void cublasGpuDotProductOld(CudaMemoryPool* memPool, double* matrixA, int matrixAHeight, int matrixAWidth, double* matrixB, int matrixBHeight, int matrixBWidth, double* matrixC, bool transposeA, bool transposeB);
 void gpuTanh(CudaMemoryPool* memPool, double* matrixA, int matrixAHeight, int matirixAWidth, double* outMatrix);
+
+void checkCudaStatus(cudaError_t status);
+void checkCublasStatus(cublasStatus_t status);

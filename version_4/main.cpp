@@ -1,28 +1,7 @@
 #include "main.hpp"
 
 int main(){
-    CompGraph* cGraph = new CompGraph();
-
-
-    Node* n0 = new Node(2,2);
-    Node* n1 = new Node(2,2);
-    Node* n2 = new Node();
-    Node* n3 = new Node();
-    Node* n4 = new Node();
-    Node* n5 = new Node();
-    Node* n6 = new Node();
-    Node* n7 = new Node();
-    Node* n8 = new Node();
-    Node* n9 = new Node();
-
-    n1->getValue(0,0) = 1.;
-    n1->getValue(1,0) = 1.;
-    crossEntropyLoss(cGraph, n0, n1, n2, n3);
-
-    cGraph->forwardPass();
-
-
-    /*
+    
     //HYPER PARAMETERS 
     int CONTEXT_WINDOW = 4;
     int LOOKUP_DIMENSIONS = 32;
@@ -73,7 +52,6 @@ int main(){
             allDataFormatted.push_back(tempPair);
         }
     }
-    /*
     cout<<"Printing"<<endl;
     for(pair<vector<int>, int> tempPair : allDataFormatted){
         for(int curInt : tempPair.first){
@@ -179,7 +157,6 @@ int main(){
             cout<<"Average Forward pass time: "<<totalForwardTime/(double)(curItter + 1.)<<endl;
             cout<<"Average Backward pass time: "<<totalBackwardTime/(double)(curItter + 1.)<<endl;
             cout<<"Average Update pass time: "<<totalUpdateTime/(double)(curItter + 1.)<<endl;
-            /*
             cout<<"Forward pass time: "<<forwardPassTime.count()<<endl;
             cout<<"Backward pass time: "<<backwardPassTime.count()<<endl;
             cout<<"Update time: "<<updateTime.count()<<endl;
@@ -193,6 +170,6 @@ int main(){
         indexes->resetValues();
         expectedValues->resetValues();
     }
-    */
+    
 }
 

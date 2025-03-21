@@ -1,6 +1,7 @@
 #include "Node.hpp"
 
 
+
 //Constructor
 Node::Node(int height, int width, bool randomiseValues, bool parameterNode){
     this->height = height;
@@ -59,12 +60,12 @@ void Node::getGradientsFromGpu(){
 
 //Returns a refrence to the value at the given row and col
 double& Node::getValue(int row, int col){
-    return this->values[(row * this->width) + col];
+    return this->values[ACCESSCOLLEADING2D(row, col, this->height)];
 }
 
 //Returns a refrence to the gradient at the given row and col
 double& Node::getGrad(int row, int col){
-    return this->gradients[(row * this->width) + col];
+    return this->gradients[ACCESSCOLLEADING2D(row, col, this->height)];
 }
 
 //Sets all the values to a given scalar
