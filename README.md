@@ -138,4 +138,4 @@ Inspired by Andrej Karpathy's [makemore](https://github.com/karpathy/makemore), 
 [Justin Johnson's Michigan Online lecture on backpropagation](https://www.youtube.com/watch?v=dB-u77Y5a6A&t=3353s) was crucial in my understanding of gradient calculations and his lecture helped me immensely.
 
 
-Chat GPT helped to answer some of my stupid calculus questions but did not write or advise on any code for the project.
+ChatGPT helped to answer some of my stupid calculus questions but did not write or advise on any code for the project.
