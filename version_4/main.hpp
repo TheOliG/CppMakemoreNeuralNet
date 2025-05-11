@@ -10,5 +10,4 @@
 #include "CompGraph.hpp"
 #include "nodeOperations.hpp"
 #include "encoding.hpp"
-#include "gpuOperationInterface.cuh"
 using namespace std;

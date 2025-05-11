@@ -1,11 +1,11 @@
 #include "CompGraph.hpp"
 
 CompGraph::CompGraph(){
-    
+    this->gpuMemPool = new CudaMemoryPool();
 }
 
 CompGraph::~CompGraph(){
-    
+    delete(gpuMemPool);
 }
 
 void CompGraph::forwardPass(){
@@ -35,17 +35,5 @@ void CompGraph::addToBackwardsPass(function<void()> func){
 void CompGraph::resetVisitedGradients(){
     for(Node* node : visitedNodes){
         node->resetGrads();
-    }
-}
-
-void CompGraph::transferAllToGpu(bool gradients){
-    for(Node* node : visitedNodes){
-        if(gradients){
-            node->copyGradientsToGpu();
-        }
-        else{
-            node->copyValuesToGpu();
-        }
-        
     }
 }

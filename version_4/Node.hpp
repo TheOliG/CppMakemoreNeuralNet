@@ -5,10 +5,10 @@
 #include <cassert>
 #include <iostream>
 
+#include "CudaMemoryClass.cuh"
+
 #define ACCESSROWLEADING2D(row,col,width) ((row * width) + col)
 #define ACCESSCOLLEADING2D(row,col,height) ((col * height) + row)
-
-#include "CudaMemoryClass.cuh"
 
 using namespace std;
 
