@@ -2,43 +2,24 @@
 By Oliver Guzowski
 
 
-This project is a **simple neural network** in **C++** that implements a **character-level language model** inspired by [Andrej Karpathy's "makemore"](https://github.com/karpathy/makemore). The model is built from the ground up, including custom implementations of **backpropagation** using **computational graphs**. This project is implemented with minimal dependencies, using only the **C++ Standard Library** and **CUDA** for GPU acceleration.
+This project is a **simple neural network** in **C++** that implements a **character-level language model** inspired by [Andrej Karpathy's "makemore"](https://github.com/karpathy/makemore). The model is built from the ground up, all code was written without the use of AI. This approach includes custom implementations of **backpropagation** using **computational graphs** and contains minimal dependencies, using only the **C++ Standard Library** and **CUDA** for GPU acceleration.
 
 
 ## Overview
 
 
-This project uses a basic neural network approach taken from [A Neural Probabilistic Language Model](https://www.jmlr.org/papers/volume3/bengio03a/bengio03a.pdf), which utilises embedding to predict the next character in a sequence
-- **Forward Pass and Backpropagation**: Efficiently propagates through the network and calculates the gradients through a backward pass.
-- **Computational Graphs**: Each computation is represented as a node in a graph (CompGraph.cpp), allowing the model to compute gradients during backpropagation and to manage memory.
-- **GPU Acceleration with CUDA**: Critical components are accelerated using CUDA to leverage GPU performance for matrix operations, this greatly improves the performance of the model.
+This project uses a basic neural network approach taken from [A Neural Probabilistic Language Model](https://www.jmlr.org/papers/volume3/bengio03a/bengio03a.pdf), which utilises embedding to predict the next character in a sequence.
+Below is a representaion of this structure taken from Bengio, Yoshua, et al. "[A Neural Probabilistic Language Model](https://www.jmlr.org/papers/volume3/bengio03a/bengio03a.pdf)" Journal of machine learning research 3.Feb (2003): 1137-1155.
+
+![alt text](https://production-media.paperswithcode.com/methods/Screen_Shot_2020-05-26_at_2.17.37_PM.png "Neural Net Structure")
+
+- **Forward Pass and Backpropagation**: Traverses through the Computational Graph and automatically calculates the gradients through a backward pass, similar to Pytorch's Autograd.
+- **Computational Graphs**: Each computation is represented as a node (Node.cpp) in a graph (CompGraph.cpp), allowing the model to compute gradients during backpropagation and to better manage memory.
+- **GPU Acceleration with CUDA**: Critical components are accelerated using CUDA to leverage GPU performance for matrix operations, this greatly improves the performance of the model compared to a standard sequential approach.
 
 
-This project is only intended for educational purposes and was done to help understand how NLP neural networks work under the hood.
+This project is intended for educational purposes only and was done solely as a learning task.
 
-
-## Features
-
-
-- **Automatic gradient calculation**: Class based implementation allows for automated gradient calculation for ease of use and expandability.
-- **CUDA Integration**: Matrix operations are optimised with CUDA for faster computation on compatible GPUs.
-- **Lightweight Design**: The neural network uses only the C++ standard library and CUDA, with no dependencies on external libraries like TensorFlow or PyTorch.
-
-
-## Project Structure
-
-- `version_1`
-- `version_2`
-- `version_3`
-   - `main.cpp`: The main file that is used to format the sample data and perform forwards pass.
-   - `Node.cpp`: The implementation of a "node" which is used to store gradients and data.
-   - `CompGraph.cpp`: The implementation of the computational graph.
-   - `encoding.cpp`: Does the character encoding.
-   - `gpuOperationInterface.cu`: Custom CuBLAS interface
-   - `nodeOperations.cu`: Forward and backward passes for the computational graph
-   - `makefile`: The makefile used to compile the project.
-- `names.txt`: Sample training data containing a large sample of names.
-- `README.md`: Project documentation.
 ## Getting Started
 
 
@@ -155,3 +136,6 @@ Inspired by Andrej Karpathy's [makemore](https://github.com/karpathy/makemore), 
 
 
 [Justin Johnson's Michigan Online lecture on backpropagation](https://www.youtube.com/watch?v=dB-u77Y5a6A&t=3353s) was crucial in my understanding of gradient calculations and his lecture helped me immensely.
+
+
+Chat GPT helped to answer some of my stupid calculus questions but did not write or advise on any code for the project.
