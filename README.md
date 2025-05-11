@@ -4,6 +4,7 @@ By Oliver Guzowski
 
 This project is a **simple neural network** in **C++** that implements a **character-level language model** inspired by [Andrej Karpathy's "makemore"](https://github.com/karpathy/makemore). The model is built from the ground up, all code was written without the use of AI. This approach includes custom implementations of **backpropagation** using **computational graphs** and contains minimal dependencies, using only the **C++ Standard Library** and **CUDA** for GPU acceleration.
 
+**IMPORTANT**: Version 3 is the most stable version and is the only version that is guarenteed to work. 
 
 ## Overview
 
