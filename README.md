@@ -120,6 +120,7 @@ Obviously some work needs to be done to improve the quality of these names
 - `Version 1`: Implements a custom GPU matrix multiplication function
 - `Version 2`: Uses CUBLAS to do matrix multiplication
 - `Version 3`: Completely reworks the structure to reduce memory rewrites for nodes
+- `Version 4`: Builds off version 3 to increase GPU utilisation (incomplete) 
 
 ## Roadmap
 
